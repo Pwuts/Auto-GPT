@@ -145,6 +145,39 @@ class MemoryItem:
             question_for_summary=question,
         )
 
+    def __eq__(self, other):
+        if not isinstance(other, MemoryItem):
+            return False
+
+        if not len(self.e_chunks) == len(other.e_chunks):
+            return False
+
+        return all(
+            [
+                getattr(self, attr) == getattr(other, attr)
+                for attr in [
+                    "raw_content",
+                    "summary",
+                    "chunks",
+                    "chunk_summaries",
+                    "metadata",
+                ]
+            ]
+            + [
+                np.array_equal(
+                    np.array(self.e_summary, np.float32),
+                    np.array(other.e_summary, np.float32)
+                )
+            ]
+            + [
+                np.array_equal(
+                    np.array(self.e_chunks[i], np.float32),
+                    np.array(other.e_chunks[i], np.float32)
+                )
+                for i in range(0, len(self.e_chunks))
+            ]
+        )
+
     def __str__(self) -> str:
         token_length = count_string_tokens(self.raw_content, Config().embedding_model)
         return f"""
